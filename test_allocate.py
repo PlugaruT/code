@@ -1,6 +1,7 @@
 from datetime import date, timedelta
 import pytest
-from model import allocate, OrderLine, Batch, OutOfStock
+from sqlalchemy.orm.session import DEACTIVE
+from model import allocate, OrderLine, Batch, OutOfStock, NotAllocated, deallocate
 
 today = date.today()
 tomorrow = today + timedelta(days=1)

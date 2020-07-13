@@ -7,6 +7,8 @@ from typing import Optional, List, Set
 class OutOfStock(Exception):
     pass
 
+class NotAllocated(Exception):
+    pass
 
 def allocate(line: OrderLine, batches: List[Batch]) -> str:
     try:
@@ -18,6 +20,16 @@ def allocate(line: OrderLine, batches: List[Batch]) -> str:
     except StopIteration:
         raise OutOfStock(f'Out of stock for sku {line.sku}')
 
+
+def deallocate(line: OrderLine, batches: List[Batch]) -> str:
+    try:
+        batch = next(
+            b for b in sorted(batches) if b.is_allocated(line)
+        )
+        batch.deallocate(line)
+        return batch.reference
+    except StopIteration:
+        raise NotAllocated(f"Line not allocated to any batch {line.orderid}")
 
 @dataclass(unsafe_hash=True)
 class OrderLine:
@@ -73,3 +85,5 @@ class Batch:
     def can_allocate(self, line: OrderLine) -> bool:
         return self.sku == line.sku and self.available_quantity >= line.qty
 
+    def is_allocated(self, line: OrderLine) -> bool:
+        return line in self._allocations
