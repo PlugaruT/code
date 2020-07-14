@@ -13,7 +13,6 @@ class AbstractRepository(abc.ABC):
         raise NotImplementedError
 
 
-
 class SqlAlchemyRepository(AbstractRepository):
 
     def __init__(self, session):
