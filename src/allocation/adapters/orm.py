@@ -3,6 +3,7 @@ from sqlalchemy import (
     ForeignKey
 )
 from sqlalchemy.orm import mapper, relationship
+from sqlalchemy.sql.sqltypes import SmallInteger
 
 from allocation.domain import model
 
@@ -17,11 +18,19 @@ order_lines = Table(
     Column('orderid', String(255)),
 )
 
+products = Table(
+    'products', metadata,
+    Column('id', Integer, primary_key=True, autoincrement=True),
+    Column('version_number', SmallInteger, nullable=False),
+    Column('sku', String(255)),
+)
+
 batches = Table(
     'batches', metadata,
     Column('id', Integer, primary_key=True, autoincrement=True),
     Column('reference', String(255)),
     Column('sku', String(255)),
+    Column('product_id', ForeignKey('products.id')),
     Column('_purchased_quantity', Integer, nullable=False),
     Column('eta', Date, nullable=True),
 )
@@ -35,6 +44,12 @@ allocations = Table(
 
 
 def start_mappers():
+    mapper(model.Product, products, properties={
+        'batches': relationship(
+            model.Batch, backref='product'
+        )
+    })
+
     lines_mapper = mapper(model.OrderLine, order_lines)
     mapper(model.Batch, batches, properties={
         '_allocations': relationship(
